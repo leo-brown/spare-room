@@ -12,20 +12,26 @@ enum Keychain {
         guard SecItemCopyMatching(q as CFDictionary, &result) == errSecSuccess, let data = result as? Data else { return nil }
         return String(data:data,encoding:.utf8)
     }
-    static func save(_ key: String, _ value: String?) {
+    @discardableResult static func save(_ key: String, _ value: String?) -> OSStatus {
         let q: [String:Any] = [kSecClass as String:kSecClassGenericPassword,kSecAttrService as String:service,kSecAttrAccount as String:key]
         SecItemDelete(q as CFDictionary)
         if let value {
             var a = q; a[kSecValueData as String] = Data(value.utf8)
             a[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
-            SecItemAdd(a as CFDictionary,nil)
+            return SecItemAdd(a as CFDictionary,nil)
         }
+        return errSecSuccess
     }
 }
 
 @MainActor final class Store: ObservableObject {
     static let shared = Store()
-    static let endpoint = URL(string:"https://rooms.leobrown.co.uk/api/")!
+    static let endpoint: URL = {
+        #if DEBUG
+        if let value = ProcessInfo.processInfo.environment["ROOMS_API_BASE"], let url = URL(string:value), url.host == "localhost" { return url }
+        #endif
+        return URL(string:"https://rooms.leobrown.co.uk/api/")!
+    }()
     @Published var snapshot: Snapshot?
     @Published var signedIn = Keychain.read("token") != nil
     @Published var error: String?
@@ -35,6 +41,7 @@ enum Keychain {
     @Published var selectedNetwork = ""
     @Published var events: [RoomEvent] = []
     @Published var notifications = UserDefaults.standard.bool(forKey:"notifications")
+    private var sessionToken = Keychain.read("token")
     private var polling = false
     var userId: String { snapshot?.user.id ?? Keychain.read("user") ?? "" }
     var network: Network? { snapshot?.networks.first { $0.id == selectedNetwork } }
@@ -48,7 +55,7 @@ enum Keychain {
             components.percentEncodedQuery = String(query); request.url = components.url!
         }
         request.httpMethod = method; request.timeoutInterval = 25
-        if authenticated, let token = Keychain.read("token") { request.setValue("Bearer \(token)",forHTTPHeaderField:"Authorization") }
+        if authenticated, let token = sessionToken { request.setValue("Bearer \(token)",forHTTPHeaderField:"Authorization") }
         if let body { request.httpBody = try JSONSerialization.data(withJSONObject:body); request.setValue("application/json",forHTTPHeaderField:"Content-Type") }
         let (data,response) = try await URLSession.shared.data(for:request)
         guard let response = response as? HTTPURLResponse else { throw APIProblem(message:"Could not reach the server.") }
@@ -63,10 +70,20 @@ enum Keychain {
         await run(refresh:false) {
             let data = try await self.call(mode,method:"POST",body:["name":name,"email":email,"password":password,"recovery_key":recovery],authenticated:false)
             let auth = try self.decoder.decode(AuthResponse.self,from:data)
-            Keychain.save("token",auth.token); Keychain.save("user",auth.user.id)
-            if let key = auth.recoveryKey { Keychain.save("recovery",key); self.recoveryKey = key; self.needsRecoverySave = true }
+            let saved = Keychain.save("token",auth.token)
+            #if !targetEnvironment(simulator)
+            guard saved == errSecSuccess else { throw APIProblem(message:"Could not securely save your login. Unlock your iPhone and try again.") }
+            #else
+            // Unsigned simulator builds can lack Keychain entitlements. Keep this
+            // session in memory only; physical devices always require secure storage.
+            _ = saved
+            #endif
+            self.sessionToken = auth.token
+            Keychain.save("user",auth.user.id)
+            if let key = auth.recoveryKey { Keychain.save("recovery",key); self.recoveryKey = key }
             self.signedIn = true
             try await self.load()
+            if auth.recoveryKey != nil { self.needsRecoverySave = true }
         }
     }
     func load() async throws {
@@ -89,6 +106,7 @@ enum Keychain {
     func refresh() async { await run { } }
     func clearSession() {
         Keychain.save("token",nil); Keychain.save("user",nil); Keychain.save("recovery",nil)
+        sessionToken = nil; needsRecoverySave = false
         snapshot = nil; signedIn = false; recoveryKey = nil; selectedNetwork = ""; events = []
         BGTaskScheduler.shared.cancel(taskRequestWithIdentifier:AppDelegate.refreshId)
         UNUserNotificationCenter.current().removeAllDeliveredNotifications()

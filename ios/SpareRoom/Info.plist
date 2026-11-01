@@ -18,5 +18,6 @@
 <key>BGTaskSchedulerPermittedIdentifiers</key><array><string>uk.co.leobrown.spareroom.refresh</string></array>
 <key>UIBackgroundModes</key><array><string>fetch</string></array>
 <key>NSPhotoLibraryUsageDescription</key><string>Add photos of your room, home or van to share with your private network.</string>
+<key>NSAppTransportSecurity</key><dict><key>NSAllowsLocalNetworking</key><true/></dict>
 <key>ITSAppUsesNonExemptEncryption</key><false/>
 </dict></plist>

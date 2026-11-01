@@ -6,7 +6,7 @@ import SwiftUI
     @Environment(\.scenePhase) private var phase
     var body: some Scene {
         WindowGroup {
-            RootView().environmentObject(store).tint(Color(red:0.14,green:0.38,blue:0.31))
+            RootView().environmentObject(store).tint(Palette.accent)
                 .alert("Something needs attention",isPresented:Binding(get:{store.error != nil},set:{if !$0 {store.error=nil}})) { Button("OK") {store.error=nil} } message: { Text(store.error ?? "") }
                 .onChange(of:phase) { _, value in
                     if value == .background { AppDelegate.schedule() }

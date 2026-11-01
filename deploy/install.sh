@@ -19,8 +19,9 @@ a2ensite spare-room-http
 apache2ctl configtest
 systemctl reload apache2
 systemctl daemon-reload
-systemctl enable --now spare-room.service
-curl --fail --silent http://127.0.0.1:8791/api/health
+systemctl enable spare-room.service
+systemctl restart spare-room.service
+curl --fail --silent --retry 10 --retry-connrefused --retry-delay 1 --retry-max-time 20 http://127.0.0.1:8791/api/health
 # Existing Certbot account is reused; DNS must already resolve to this host.
 certbot certonly --webroot -w /var/www/spare-room/public -d rooms.leobrown.co.uk --cert-name rooms.leobrown.co.uk --non-interactive --keep-until-expiring
 install -m 644 deploy/rooms-https.conf /etc/apache2/sites-available/spare-room-https.conf

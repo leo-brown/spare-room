@@ -144,6 +144,7 @@ def limited(c, key, limit=15):
 
 class Handler(BaseHTTPRequestHandler):
     server_version = 'SpareRoom'
+    sys_version = ''
     def log_message(self, fmt, *args):
         # Never log bodies, Authorization headers, network codes, or query parameters.
         logging.info('%s %s', self.command, urlparse(self.path).path)
@@ -156,7 +157,12 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header('Cache-Control','no-store')
         self.send_header('X-Content-Type-Options','nosniff')
         self.end_headers()
-        self.wfile.write(body)
+        if not getattr(self,'head_only',False): self.wfile.write(body)
+
+    def do_HEAD(self):
+        self.head_only = True
+        self.command = 'GET'
+        self.handle_request()
 
     def do_GET(self):
         self.handle_request()
@@ -183,7 +189,7 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header('X-Content-Type-Options','nosniff')
             self.send_header('Content-Security-Policy',"default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data:; base-uri 'none'; frame-ancestors 'none'")
             self.end_headers()
-            self.wfile.write(b)
+            if not getattr(self,'head_only',False): self.wfile.write(b)
             return
         c = None
         try:
@@ -205,7 +211,7 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_header('Cache-Control','private, no-store')
                 self.send_header('X-Content-Type-Options','nosniff')
                 self.end_headers()
-                self.wfile.write(result.content)
+                if not getattr(self,'head_only',False): self.wfile.write(result.content)
             else:
                 self.reply(200,result)
         except APIError as e:

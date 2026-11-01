@@ -2,8 +2,10 @@
 
 An open-source, native iPhone and iPad app for sharing rooms, homes and camper vans with private networks of family and friends.
 
-**Website and source download:** https://rooms.leobrown.co.uk  
-**Repository:** https://github.com/leo-brown/spare-room  
+**Website and source download:** https://rooms.leobrown.co.uk
+
+**Repository:** https://github.com/leo-brown/spare-room
+
 **License:** MIT
 
 ## Run the iOS app
@@ -15,7 +17,7 @@ An open-source, native iPhone and iPad app for sharing rooms, homes and camper v
 5. Add a room, home or van under **My places**, upload photos, and add free/busy dates.
 6. Enable notifications in **Networks → Settings** and enable Background App Refresh in iOS Settings.
 
-The app connects to the live HTTPS API by default. There are no client API keys, third-party packages, or committed signing identities. Requires **iOS 17+** and Xcode with an iOS 17+ SDK. A source ZIP is not an installable IPA. Distribution through TestFlight or the App Store requires your Apple developer account and signing.
+The app connects to the live HTTPS API by default. Unsigned simulator builds keep their session in memory when simulator Keychain entitlements are unavailable; real devices require Keychain storage. There are no client API keys, third-party packages, or committed signing identities. Requires **iOS 17+** and Xcode with an iOS 17+ SDK. A source ZIP is not an installable IPA. Distribution through TestFlight or the App Store requires your Apple developer account and signing.
 
 ```sh
 python3 ios/create_project.py
@@ -60,3 +62,16 @@ The tests use temporary databases and loopback HTTP. They never call production.
 Listings and photos are visible only within the associated network. Guest identities and request notes are restricted to guest and host; accepted occupancy is visible to network members. Shared codes are invitations, so share them only with trusted people. Email is a login identifier: email ownership verification and email password resets are not provided. Save the recovery key.
 
 The app keeps live network data in memory and requires connectivity for changes; there is no offline editing queue. Arrange exact addresses and arrival details through your usual private channels. No payments, public booking marketplace, chat, tracking, advertising or real family sample data are included. Source archives exclude runtime data and credentials.
+
+## Native UI acceptance test
+
+Start a separate local API, then run the shared scheme’s UI test on an iPhone simulator:
+
+```sh
+ROOMS_DATABASE=/tmp/spare-room-ui/rooms.sqlite3 python3 backend/server.py --port 8792
+# In another terminal, from the repository:
+xcodebuild -project ios/SpareRoom.xcodeproj -scheme SpareRoom \
+  -destination 'platform=iOS Simulator,name=iPhone 17' CODE_SIGNING_ALLOWED=NO test
+```
+
+The test injects a **Debug-only localhost** endpoint and creates synthetic accounts in that local database. Regular launches and Release builds use the production HTTPS API. UI tests never create production records.

@@ -28,7 +28,7 @@ frameworks=add('frameworks','isa = PBXFrameworksBuildPhase; buildActionMask = 21
 projectconfigs=[]; targetconfigs=[]
 for mode in ['Debug','Release']:
     projectconfigs.append(add('project'+mode,f'isa = XCBuildConfiguration; name = {mode}; buildSettings = {{ CLANG_ENABLE_MODULES = YES; SDKROOT = iphoneos; IPHONEOS_DEPLOYMENT_TARGET = 17.0; SWIFT_VERSION = 5.0; }};'))
-    opts='SWIFT_OPTIMIZATION_LEVEL = "-Onone";' if mode=='Debug' else 'SWIFT_OPTIMIZATION_LEVEL = "-O";'
+    opts='SWIFT_OPTIMIZATION_LEVEL = "-Onone"; SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;' if mode=='Debug' else 'SWIFT_OPTIMIZATION_LEVEL = "-O";'
     targetconfigs.append(add('target'+mode,f'''isa = XCBuildConfiguration; name = {mode}; buildSettings = {{
         PRODUCT_BUNDLE_IDENTIFIER = uk.co.leobrown.spareroom; PRODUCT_NAME = "$(TARGET_NAME)";
         INFOPLIST_FILE = SpareRoom/Info.plist; GENERATE_INFOPLIST_FILE = NO;
@@ -41,13 +41,30 @@ for mode in ['Debug','Release']:
 pc=add('projectconfigs',f'isa = XCConfigurationList; buildConfigurations = ({",".join(projectconfigs)},); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;')
 tc=add('targetconfigs',f'isa = XCConfigurationList; buildConfigurations = ({",".join(targetconfigs)},); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;')
 target=add('target',f'isa = PBXNativeTarget; buildConfigurationList = {tc}; buildPhases = ({srcphase},{frameworks},{resphase},); buildRules = (); dependencies = (); name = SpareRoom; productName = SpareRoom; productReference = {product}; productType = "com.apple.product-type.application";')
-project=add('project',f'isa = PBXProject; attributes = {{ LastUpgradeCheck = 1600; }}; buildConfigurationList = {pc}; compatibilityVersion = "Xcode 14.0"; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = (en,Base,); mainGroup = {main}; productRefGroup = {products}; projectDirPath = ""; projectRoot = ""; targets = ({target},);')
+
+uitestfile=add('uitestfile','isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpareRoomUITests.swift; sourceTree = "<group>";')
+uitestgroup=add('uitestgroup',f'isa = PBXGroup; children = ({uitestfile},); path = SpareRoomUITests; sourceTree = "<group>";')
+objects[main]=objects[main].replace(f'{group},{products}',f'{group},{uitestgroup},{products}')
+uitestproduct=add('uitestproduct','isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = SpareRoomUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR;')
+objects[products]=objects[products].replace(f'({product},)',f'({product},{uitestproduct},)')
+uitestbuild=add('uitestbuild',f'isa = PBXBuildFile; fileRef = {uitestfile};')
+uitestphase=add('uitestphase',f'isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = ({uitestbuild},); runOnlyForDeploymentPostprocessing = 0;')
+uiconfigs=[]
+for mode in ['Debug','Release']:
+    uiconfigs.append(add('uitest'+mode,f'isa = XCBuildConfiguration; name = {mode}; buildSettings = {{ PRODUCT_BUNDLE_IDENTIFIER = uk.co.leobrown.spareroom.uitests; PRODUCT_NAME = "$(TARGET_NAME)"; GENERATE_INFOPLIST_FILE = YES; TARGETED_DEVICE_FAMILY = "1,2"; TEST_TARGET_NAME = SpareRoom; CODE_SIGN_STYLE = Automatic; }};'))
+uicl=add('uiconfigs',f'isa = XCConfigurationList; buildConfigurations = ({",".join(uiconfigs)},); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;')
+proxy=add('proxy',f'isa = PBXContainerItemProxy; containerPortal = {ident("project")}; proxyType = 1; remoteGlobalIDString = {target}; remoteInfo = SpareRoom;')
+dependency=add('dependency',f'isa = PBXTargetDependency; target = {target}; targetProxy = {proxy};')
+uitarget=add('uitarget',f'isa = PBXNativeTarget; buildConfigurationList = {uicl}; buildPhases = ({uitestphase},); buildRules = (); dependencies = ({dependency},); name = SpareRoomUITests; productName = SpareRoomUITests; productReference = {uitestproduct}; productType = "com.apple.product-type.bundle.ui-testing";')
+
+project=add('project',f'isa = PBXProject; attributes = {{ LastUpgradeCheck = 1600; }}; buildConfigurationList = {pc}; compatibilityVersion = "Xcode 14.0"; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = (en,Base,); mainGroup = {main}; productRefGroup = {products}; projectDirPath = ""; projectRoot = ""; targets = ({target},{uitarget},);')
 proj=root/'SpareRoom.xcodeproj'; proj.mkdir(exist_ok=True)
 (proj/'project.pbxproj').write_text('// !$*UTF8*$!\n{ archiveVersion = 1; classes = {}; objectVersion = 56; objects = {\n'+ '\n'.join(k+' = { '+v+' };' for k,v in objects.items())+'\n}; rootObject = '+project+'; }\n')
 schemes=proj/'xcshareddata'/'xcschemes'; schemes.mkdir(parents=True,exist_ok=True)
 (schemes/'SpareRoom.xcscheme').write_text(f'''<?xml version="1.0" encoding="UTF-8"?>
 <Scheme LastUpgradeVersion="1600" version="1.3">
 <BuildAction parallelizeBuildables="YES" buildImplicitDependencies="YES"><BuildActionEntries><BuildActionEntry buildForTesting="YES" buildForRunning="YES" buildForProfiling="YES" buildForArchiving="YES" buildForAnalyzing="YES"><BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="{target}" BuildableName="SpareRoom.app" BlueprintName="SpareRoom" ReferencedContainer="container:SpareRoom.xcodeproj"/></BuildActionEntry></BuildActionEntries></BuildAction>
+<TestAction buildConfiguration="Debug" selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier="Xcode.IDEFoundation.Launcher.LLDB"><Testables><TestableReference skipped="NO"><BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="{uitarget}" BuildableName="SpareRoomUITests.xctest" BlueprintName="SpareRoomUITests" ReferencedContainer="container:SpareRoom.xcodeproj"/></TestableReference></Testables></TestAction>
 <LaunchAction buildConfiguration="Debug" selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier="Xcode.IDEFoundation.Launcher.LLDB" launchStyle="0" useCustomWorkingDirectory="NO" ignoresPersistentStateOnLaunch="NO" debugDocumentVersioning="YES" allowLocationSimulation="YES"><BuildableProductRunnable runnableDebuggingMode="0"><BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="{target}" BuildableName="SpareRoom.app" BlueprintName="SpareRoom" ReferencedContainer="container:SpareRoom.xcodeproj"/></BuildableProductRunnable></LaunchAction>
 <ProfileAction buildConfiguration="Release" shouldUseLaunchSchemeArgsEnv="YES" savedToolIdentifier="" useCustomWorkingDirectory="NO" debugDocumentVersioning="YES"/>
 <AnalyzeAction buildConfiguration="Debug"/><ArchiveAction buildConfiguration="Release" revealArchiveInOrganizer="YES"/>

@@ -1,13 +1,23 @@
 import SwiftUI
 import PhotosUI
 
-private let forest = Color(red:0.14,green:0.38,blue:0.31)
-private let sand = Color(red:0.97,green:0.96,blue:0.92)
+enum Palette {
+    static let accent = Color(uiColor:UIColor { traits in
+        traits.userInterfaceStyle == .dark ? UIColor(red:0.62,green:0.80,blue:0.69,alpha:1) : UIColor(red:0.14,green:0.38,blue:0.31,alpha:1)
+    })
+    static let paper = Color(uiColor:UIColor { traits in
+        traits.userInterfaceStyle == .dark ? UIColor(red:0.08,green:0.12,blue:0.10,alpha:1) : UIColor(red:0.97,green:0.96,blue:0.92,alpha:1)
+    })
+}
+private let forest = Palette.accent
+private let sand = Palette.paper
+
+@MainActor private func dismissKeyboard() { UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder),to:nil,from:nil,for:nil) }
 
 struct RootView: View {
     @EnvironmentObject var store: Store
     var body: some View {
-        Group {
+        ZStack {
             if !store.signedIn { AuthView() }
             else if store.snapshot == nil {
                 VStack(spacing:20) {
@@ -345,6 +355,7 @@ struct RoomForm: View {
                     Text("Share the street and postal code, without a house or flat number. For a van, use its current base. Arrange exact meeting details privately.").font(.caption).foregroundStyle(.secondary)
                 }
                 Section { Button(room == nil ? "Add this place" : "Save changes") {
+                    dismissKeyboard()
                     Task { await store.run {
                         let body: [String:Any] = ["network_id":networkId,"title":title,"street":street,"city":city,"postal_code":postal,"country":country,"timezone":timezone,"description":description,"guests":guests,"room_type":type]
                         try await store.mutate(room.map {"rooms/\($0.id)"} ?? "rooms",method:room == nil ? "POST" : "PATCH",body)
@@ -524,14 +535,14 @@ struct NetworksView: View {
                 }
                 Section("Create a network") {
                     TextField("Family, friends, chosen family…",text:$name)
-                    Button("Create & get a code") { Task { await store.run {
+                    Button("Create & get a code") { dismissKeyboard(); Task { await store.run {
                         let data = try await store.call("networks",method:"POST",body:["name":name])
                         if let value = try JSONSerialization.jsonObject(with:data) as? [String:Any], let id = value["id"] as? String { store.selectedNetwork=id }; name=""
                     } } }.disabled(store.working || name.trimmingCharacters(in:.whitespaces).isEmpty)
                 }
                 Section("Join a network") {
                     TextField("Enter shared code",text:$code).textInputAutocapitalization(.characters).autocorrectionDisabled()
-                    Button("Join your people") { Task { await store.run {
+                    Button("Join your people") { dismissKeyboard(); Task { await store.run {
                         let data = try await store.call("networks/join",method:"POST",body:["code":code])
                         if let value = try JSONSerialization.jsonObject(with:data) as? [String:Any], let id = value["id"] as? String { store.selectedNetwork=id }; code=""
                     } } }.disabled(store.working || code.trimmingCharacters(in:.whitespaces).isEmpty)
