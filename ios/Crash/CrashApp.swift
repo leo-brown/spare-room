@@ -1,6 +1,6 @@
 import SwiftUI
 
-@main struct SpareRoomApp: App {
+@main struct CrashApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     @StateObject private var store = Store.shared
     @Environment(\.scenePhase) private var phase

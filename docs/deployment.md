@@ -3,7 +3,7 @@
 The live hostname is `rooms.leobrown.co.uk`. Its DNS must resolve to the existing Apache host. The app uses a dedicated loopback process on port 8791 and never replaces other apps' virtual hosts or databases.
 
 1. Upload a clean source directory to a staging folder on the server.
-2. Produce `public/source.zip` from tracked files using `git archive --format=zip --prefix=spare-room/ HEAD > public/source.zip`.
+2. Produce `public/source.zip` from tracked files using `git archive --format=zip --prefix=crash/ HEAD > public/source.zip`.
 3. From the source folder run `sudo bash deploy/install.sh`. This installs files in `/var/www/spare-room`, creates the unprivileged `spare-room` user, starts the systemd API, adds dedicated Apache virtual hosts, obtains a TLS certificate using the host's existing Certbot account and enables the daily backup timer.
 4. Check `https://rooms.leobrown.co.uk/api/health`, the landing/privacy pages and `/source.zip`.
 
@@ -32,3 +32,7 @@ For personal installation, select your Apple team in Xcode and run on a trusted 
 ## Source hygiene
 
 Only app code, server code, infrastructure templates, synthetic tests and documentation belong in Git/source ZIP. Never include `/var/lib/spare-room`, backups, real accounts, original voice notes, `.env` secrets, signing files, tokens or source repository credentials. The downloadable ZIP is generated from tracked files and excludes its own ignored output.
+
+## App rename compatibility
+
+The app, Xcode targets, source folders and UI are named Crash. The original GitHub repository URL, rooms.leobrown.co.uk hostname, ROOMS_* configuration keys and existing server paths/service-account/systemd identifiers are retained so the rename does not move or reset live data or disrupt backups and TLS renewal. The renamed `deploy/crash*.service` and timer templates install to those existing systemd unit names.

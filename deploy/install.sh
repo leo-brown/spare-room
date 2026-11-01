@@ -11,7 +11,9 @@ install -m 644 backend/server.py backend/schema.sql /var/www/spare-room/backend/
 install -m 644 public/index.html public/privacy.html /var/www/spare-room/public/
 if [[ -f public/source.zip ]]; then install -m 644 public/source.zip /var/www/spare-room/public/; fi
 install -m 644 deploy/backup.py /var/www/spare-room/deploy/
-install -m 644 deploy/spare-room.service deploy/spare-room-backup.service deploy/spare-room-backup.timer /etc/systemd/system/
+install -m 644 deploy/crash.service /etc/systemd/system/spare-room.service
+install -m 644 deploy/crash-backup.service /etc/systemd/system/spare-room-backup.service
+install -m 644 deploy/crash-backup.timer /etc/systemd/system/spare-room-backup.timer
 install -d -m 700 -o spare-room -g spare-room /var/lib/spare-room
 install -m 644 deploy/rooms-http.conf /etc/apache2/sites-available/spare-room-http.conf
 a2enmod proxy proxy_http headers rewrite ssl reqtimeout

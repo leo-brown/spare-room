@@ -62,7 +62,7 @@ struct AuthView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment:.leading,spacing:24) {
-                    HStack { Image(systemName:"door.left.hand.open").font(.system(size:36)); Text("spare room").font(.title2.weight(.semibold)) }.foregroundStyle(forest).padding(.top,32)
+                    HStack { Image(systemName:"door.left.hand.open").font(.system(size:36)); Text("Crash").font(.title2.weight(.semibold)) }.foregroundStyle(forest).padding(.top,32)
                     Text("There’s a place\nfor you.").font(.system(size:46,weight:.medium,design:.serif)).fixedSize(horizontal:false,vertical:true)
                     Text("A little closer to your people. Share a spare room, a home or a van with the networks you trust.").font(.title3).foregroundStyle(.secondary)
                     Picker("Account",selection:$mode) { Text("Get started").tag("signup"); Text("Sign in").tag("login"); Text("Recover").tag("recover") }.pickerStyle(.segmented)
@@ -135,7 +135,7 @@ struct DiscoverView: View {
                         ForEach(rooms) { room in NavigationLink { RoomDetailView(roomId:room.id,initialStart:start,initialEnd:end) } label: { RoomCard(room:room) }.buttonStyle(.plain) }
                     }
                 }.padding(22)
-            }.background(sand).navigationTitle("Spare Room").navigationBarTitleDisplayMode(.inline)
+            }.background(sand).navigationTitle("Crash").navigationBarTitleDisplayMode(.inline)
                 .refreshable { await store.refresh() }
         }
     }
@@ -515,7 +515,7 @@ struct NetworksView: View {
                     Section {
                         NetworkPicker()
                         Text(n.code).font(.system(.largeTitle,design:.monospaced).weight(.medium)).textSelection(.enabled).frame(maxWidth:.infinity).padding(.vertical,12)
-                        ShareLink(item:"Join \(n.name) on Spare Room. Network code: \(n.code)\nhttps://rooms.leobrown.co.uk") { Label("Share network code",systemImage:"square.and.arrow.up") }
+                        ShareLink(item:"Join \(n.name) on Crash. Network code: \(n.code)\nhttps://rooms.leobrown.co.uk") { Label("Share network code",systemImage:"square.and.arrow.up") }
                         Text("Anyone with this code can join and see the network’s listings. Share it with people you trust.").font(.caption).foregroundStyle(.secondary)
                         Toggle("Notify me about this network",isOn:Binding(get:{n.muted == 0},set:{ value in Task { await store.run { try await store.mutate("networks/\(n.id)/mute",["muted":!value]) } } })).disabled(store.working)
                     } header: { Text(n.name) }
@@ -592,7 +592,7 @@ struct SettingsView: View {
                 Section("Open source") {
                     Link("Source code on GitHub",destination:URL(string:"https://github.com/leo-brown/spare-room")!)
                     Link("Privacy",destination:URL(string:"https://rooms.leobrown.co.uk/privacy")!)
-                    Text("Spare Room 1.0 · Made for your people").font(.caption).foregroundStyle(.secondary)
+                    Text("Crash 1.0 · Made for your people").font(.caption).foregroundStyle(.secondary)
                 }
                 Section {
                     Button("Sign out") { Task { await store.logout(); if !store.signedIn {dismiss()} } }.disabled(store.working)

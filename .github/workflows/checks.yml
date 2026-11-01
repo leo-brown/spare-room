@@ -11,4 +11,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: python3 ios/create_project.py
-      - run: xcodebuild -project ios/SpareRoom.xcodeproj -scheme SpareRoom -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath /tmp/spare-room-build CODE_SIGNING_ALLOWED=NO build
+      - run: xcodebuild -project ios/Crash.xcodeproj -scheme Crash -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath /tmp/crash-build CODE_SIGNING_ALLOWED=NO build

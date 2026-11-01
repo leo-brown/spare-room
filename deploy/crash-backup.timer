@@ -1,6 +1,7 @@
 [Unit]
-Description=Daily Spare Room database backup
+Description=Daily Crash database backup
 [Timer]
+Unit=spare-room-backup.service
 OnCalendar=*-*-* 03:15:00 UTC
 Persistent=true
 [Install]
