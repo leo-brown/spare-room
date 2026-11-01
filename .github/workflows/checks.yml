@@ -1,0 +1,14 @@
+name: Checks
+on: [push, pull_request]
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m unittest discover -s tests -v
+  ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 ios/create_project.py
+      - run: xcodebuild -project ios/SpareRoom.xcodeproj -scheme SpareRoom -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath /tmp/spare-room-build CODE_SIGNING_ALLOWED=NO build

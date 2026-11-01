@@ -1,0 +1,30 @@
+[Unit]
+Description=Spare Room private-network API
+After=network.target
+[Service]
+Type=simple
+User=spare-room
+Group=spare-room
+WorkingDirectory=/var/www/spare-room
+Environment=ROOMS_DATABASE=/var/lib/spare-room/rooms.sqlite3
+Environment=ROOMS_PUBLIC=/var/www/spare-room/public
+ExecStart=/usr/bin/python3 /var/www/spare-room/backend/server.py --host 127.0.0.1 --port 8791
+Restart=on-failure
+RestartSec=3
+UMask=0077
+StateDirectory=spare-room
+StateDirectoryMode=0700
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/spare-room
+RestrictSUIDSGID=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+MemoryMax=512M
+TasksMax=64
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,11 @@
+[Unit]
+Description=Back up Spare Room
+[Service]
+Type=oneshot
+User=spare-room
+Group=spare-room
+UMask=0077
+ExecStart=/usr/bin/python3 /var/www/spare-room/deploy/backup.py
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/spare-room
