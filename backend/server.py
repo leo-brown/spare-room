@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Crash API. Python standard library only; all runtime state stays outside source."""
+"""Crashpad API. Python standard library only; all runtime state stays outside source."""
 import argparse
 from contextlib import closing
 import base64
@@ -143,7 +143,7 @@ def limited(c, key, limit=15):
         raise APIError(429, 'Too many attempts. Please try again in 15 minutes.')
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = 'Crash'
+    server_version = 'Crashpad'
     sys_version = ''
     def log_message(self, fmt, *args):
         # Never log bodies, Authorization headers, network codes, or query parameters.

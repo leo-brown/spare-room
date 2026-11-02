@@ -1,6 +1,6 @@
 import XCTest
 
-final class CrashUITests: XCTestCase {
+final class CrashpadUITests: XCTestCase {
     func testCreateNetworkAndPlace() throws {
         continueAfterFailure = false
         let app = XCUIApplication()

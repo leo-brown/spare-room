@@ -1,4 +1,4 @@
-# Crash
+# Crashpad
 
 An open-source, native iPhone and iPad app for sharing rooms, homes and camper vans with private networks of family and friends.
 
@@ -10,9 +10,9 @@ An open-source, native iPhone and iPad app for sharing rooms, homes and camper v
 
 ## Run the iOS app
 
-1. Download this repository and open `ios/Crash.xcodeproj` in Xcode on a Mac.
-2. Select the **Crash** scheme and an iPhone simulator, then Run.
-3. For a real iPhone, select your Apple development team under **Signing & Capabilities**. The default bundle ID is `uk.co.leobrown.crash`; change it if your team cannot register that ID.
+1. Download this repository and open `ios/Crashpad.xcodeproj` in Xcode on a Mac.
+2. Select the **Crashpad** scheme and an iPhone simulator, then Run.
+3. For a real iPhone, select your Apple development team under **Signing & Capabilities**. The default bundle ID is `uk.co.leobrown.crashpad`; change it if your team cannot register that ID.
 4. Create an account, **save your recovery key**, and create or join a network.
 5. Add a room, home or van under **My places**, upload photos, and add free/busy dates.
 6. Enable notifications in **Networks → Settings** and enable Background App Refresh in iOS Settings.
@@ -21,9 +21,9 @@ The app connects to the live HTTPS API by default. Unsigned simulator builds kee
 
 ```sh
 python3 ios/create_project.py
-xcodebuild -project ios/Crash.xcodeproj -scheme Crash \
+xcodebuild -project ios/Crashpad.xcodeproj -scheme Crashpad \
   -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
-  -derivedDataPath /tmp/crash-build CODE_SIGNING_ALLOWED=NO build
+  -derivedDataPath /tmp/crashpad-build CODE_SIGNING_ALLOWED=NO build
 ```
 
 ## Included
@@ -51,7 +51,7 @@ No APNs key or push server is required. Reliable immediate alerts would require 
 Python 3.11+ standard library only; SQLite persists accounts, photos, networks, availability and requests. Production runs behind Apache HTTPS under a dedicated unprivileged systemd user. No external DB provider or cloud account is needed.
 
 ```sh
-ROOMS_DATABASE=/tmp/crash-dev/rooms.sqlite3 python3 backend/server.py --port 8791
+ROOMS_DATABASE=/tmp/crashpad-dev/rooms.sqlite3 python3 backend/server.py --port 8791
 python3 -m unittest discover -s tests -v
 ```
 
@@ -68,9 +68,9 @@ The app keeps live network data in memory and requires connectivity for changes;
 Start a separate local API, then run the shared scheme’s UI test on an iPhone simulator:
 
 ```sh
-ROOMS_DATABASE=/tmp/crash-ui/rooms.sqlite3 python3 backend/server.py --port 8792
+ROOMS_DATABASE=/tmp/crashpad-ui/rooms.sqlite3 python3 backend/server.py --port 8792
 # In another terminal, from the repository:
-xcodebuild -project ios/Crash.xcodeproj -scheme Crash \
+xcodebuild -project ios/Crashpad.xcodeproj -scheme Crashpad \
   -destination 'platform=iOS Simulator,name=iPhone 17' CODE_SIGNING_ALLOWED=NO test
 ```
 

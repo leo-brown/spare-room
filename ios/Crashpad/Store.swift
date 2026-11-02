@@ -5,7 +5,7 @@ import BackgroundTasks
 
 struct APIProblem: LocalizedError { let message: String; var errorDescription: String? { message } }
 enum Keychain {
-    static let service = "uk.co.leobrown.crash"
+    static let service = "uk.co.leobrown.crashpad"
     static func read(_ key: String) -> String? {
         let q: [String:Any] = [kSecClass as String:kSecClassGenericPassword,kSecAttrService as String:service,kSecAttrAccount as String:key,kSecReturnData as String:true]
         var result: CFTypeRef?
@@ -117,7 +117,7 @@ enum Keychain {
             let allowed = try await UNUserNotificationCenter.current().requestAuthorization(options:[.alert,.sound,.badge])
             notifications = allowed; UserDefaults.standard.set(allowed,forKey:"notifications")
             if allowed { AppDelegate.schedule() }
-            else { error = "Notifications are disabled. You can enable them in iPhone Settings → Notifications → Crash." }
+            else { error = "Notifications are disabled. You can enable them in iPhone Settings → Notifications → Crashpad." }
         } catch { self.error = error.localizedDescription }
     }
     func disableNotifications() {
@@ -152,7 +152,7 @@ enum Keychain {
 }
 
 @MainActor final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
-    static let refreshId = "uk.co.leobrown.crash.refresh"
+    static let refreshId = "uk.co.leobrown.crashpad.refresh"
     func application(_ application: UIApplication, didFinishLaunchingWithOptions options: [UIApplication.LaunchOptionsKey:Any]? = nil) -> Bool {
         UNUserNotificationCenter.current().delegate = self
         BGTaskScheduler.shared.register(forTaskWithIdentifier:Self.refreshId,using:nil) { task in

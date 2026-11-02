@@ -1,5 +1,5 @@
 [Unit]
-Description=Crash private-network API
+Description=Crashpad private-network API
 After=network.target
 [Service]
 Type=simple

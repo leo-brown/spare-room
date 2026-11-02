@@ -1,5 +1,5 @@
 [Unit]
-Description=Daily Crash database backup
+Description=Daily Crashpad database backup
 [Timer]
 Unit=spare-room-backup.service
 OnCalendar=*-*-* 03:15:00 UTC
